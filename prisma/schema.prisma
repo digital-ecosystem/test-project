@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  sessions  Session[]
+}
+
+model Session {
+  id        String     @id @default(uuid())
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  status    Status     @default(Draft)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now())
+  answers   Answer[]
+  thread    Thread?
+  document  Document?
+}
+
+model Answer {
+  id         String    @id @default(uuid())
+  session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String
+  questionId Int
+  value      String
+  createdAt  DateTime  @default(now())
+}
+
+model Thread {
+  id         String     @id @default(uuid())
+  session    Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String     @unique
+  createdAt  DateTime   @default(now())
+  messages   Message[]
+}
+
+model Message {
+  id        String    @id @default(uuid())
+  thread    Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId  String
+  role      Role
+  content   String
+  index     Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+}
+
+model Document {
+  id         String    @id @default(uuid())
+  session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId  String    @unique
+  url        String
+  signedAt   DateTime  @default(now())
+}
+
+enum Status {
+  Draft
+  Pending
+  Approved
+  Rejected
+}
+
+enum Role {
+  customer
+  assistant
+}
