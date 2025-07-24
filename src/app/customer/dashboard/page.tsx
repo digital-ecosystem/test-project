@@ -1,0 +1,491 @@
+'use client';
+
+// pages/dashboard.tsx
+import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/navigation';
+import { Session, SessionStatus, User } from '@/types';
+
+// const sessionData: Session[] = [
+//     {
+//         // Session table data
+//         id: "4a1e5037-7f60-48d4-b9e3-49dc47a88825",
+//         userId: "cmd8g9o6r00007fnocfn0s62c",
+//         status: SessionStatus.DRAFT,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-25 06:43:52.415",
+//         createdAt: "2025-07-18 06:43:52.416",
+//         updatedAt: "2025-07-18 06:43:52.416",
+
+//         // User table data (joined)
+//         user: {
+//             id: "cmd8g9o6r00007fnocfn0s62c",
+//             email: "hardik.palminfotech@gmail.com",
+//             name: "Hardik",
+//             isActive: true,
+//             createdAt: "2025-07-18 06:40:34.985",
+//             updatedAt: "2025-07-18 06:43:52.41"
+//         }
+//     },
+//     {
+//         id: "5b2f6148-8g71-59e5-c0f4-5aed58b99936",
+//         userId: "dne9h0p7s11118gnpdgp1t73d",
+//         status: SessionStatus.DRAFT,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-17 14:30:20.123",
+//         createdAt: "2025-07-10 14:30:20.123",
+//         updatedAt: "2025-07-17 14:30:20.123",
+
+//         user: {
+//             id: "dne9h0p7s11118gnpdgp1t73d",
+//             email: "sarah.johnson@example.com",
+//             name: "Sarah",
+//             isActive: true,
+//             createdAt: "2025-07-10 12:15:45.234",
+//             updatedAt: "2025-07-17 14:30:20.123"
+//         }
+//     },
+//     {
+//         id: "6c3g7259-9h82-6af6-d1g5-6bfe69c00a47",
+//         userId: "eof0i1q8t22229hop0ehq2u84e",
+//         status: SessionStatus.PENDING,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-24 09:15:30.456",
+//         createdAt: "2025-07-17 09:15:30.456",
+//         updatedAt: "2025-07-17 09:15:30.456",
+
+//         user: {
+//             id: "eof0i1q8t22229hop0ehq2u84e",
+//             email: "mike.chen@techcorp.com",
+//             name: "Mike",
+//             isActive: true,
+//             createdAt: "2025-07-15 08:22:15.789",
+//             updatedAt: "2025-07-17 09:15:30.456"
+//         }
+//     },
+//     {
+//         id: "7d4h836a-ai93-7bg7-e2h6-7cg0f7ad1b58",
+//         userId: "fpg1j2r9u33330iqp1fir3v95f",
+//         status: SessionStatus.REJECTED,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-20 16:45:12.789",
+//         createdAt: "2025-07-13 16:45:12.789",
+//         updatedAt: "2025-07-16 10:20:05.123",
+
+//         user: {
+//             id: "fpg1j2r9u33330iqp1fir3v95f",
+//             email: "anna.rodriguez@startup.io",
+//             name: "Anna",
+//             isActive: false,
+//             createdAt: "2025-07-12 14:30:45.456",
+//             updatedAt: "2025-07-16 10:20:05.123"
+//         }
+//     },
+//     {
+//         id: "8e5i947b-bj04-8ch8-f3i7-8dh1g8be2c69",
+//         userId: "gqh2k3s0v44441jrq2gjs4wa6g",
+//         status: SessionStatus.APPROVED,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-26 11:30:45.321",
+//         createdAt: "2025-07-19 11:30:45.321",
+//         updatedAt: "2025-07-19 11:30:45.321",
+
+//         user: {
+//             id: "gqh2k3s0v44441jrq2gjs4wa6g",
+//             email: "david.kim@agency.com",
+//             name: "David",
+//             isActive: true,
+//             createdAt: "2025-07-18 09:45:30.654",
+//             updatedAt: "2025-07-19 11:30:45.321"
+//         }
+//     },
+//     {
+//         id: "9f6j058c-ck15-9di9-g4j8-9ei2h9cf3d7a",
+//         userId: "hrj3l4t1w55552ksr3hkt5xb7h",
+//         status: SessionStatus.DRAFT,
+//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+//         expiresAt: "2025-07-15 08:20:15.987",
+//         createdAt: "2025-07-08 08:20:15.987",
+//         updatedAt: "2025-07-15 08:20:15.987",
+
+//         user: {
+//             id: "hrj3l4t1w55552ksr3hkt5xb7h",
+//             email: "emma.wilson@consultancy.com",
+//             name: "Emma",
+//             isActive: true,
+//             createdAt: "2025-07-07 15:10:20.321",
+//             updatedAt: "2025-07-15 08:20:15.987"
+//         }
+//     }
+// ];
+
+const Dashboard = () => {
+    // const [loading, setLoading] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [user, setUser] = useState<User | null>(null);
+    const [sessions, setSessions] = useState<Session[]>([]);
+    const router = useRouter();
+        
+    useEffect(() => {
+        // Fetch login user
+        const fetchUser = async () => {
+            const response = await fetch('/api/auth/me');
+            const user = await response.json();
+            console.log("🚀 ~ fetchUser ~ user:", user)
+            if(user?.success) {
+                setUser(user.user);
+            } else {
+                setUser(null);
+                router.push('/customer/signin')
+            }
+        };
+        fetchUser();
+    }, []);
+
+    useEffect(() => {
+        const fetchSession = async () => {
+            // setLoading('fetching');
+            const response = await fetch('/api/dashboard', {
+                method: 'GET',
+            });
+            const data = await response.json();
+            console.log("🚀 ~ fetchSession ~ data:", data)
+            // setLoading(null);
+            if(data?.success) {
+                setSessions(data.sessions);
+            } else {
+                setSessions([]);
+            }
+            console.log("data : ", data);
+        }
+        fetchSession();
+    }, [])
+
+    const getStatusBadge = (status: string) => {
+        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+        switch (status) {
+            case SessionStatus.APPROVED:
+                return `${baseClasses} bg-green-100 text-green-800`;
+            case SessionStatus.PENDING:
+                return `${baseClasses} bg-yellow-100 text-yellow-800`;
+            case SessionStatus.REJECTED:
+                return `${baseClasses} bg-red-100 text-red-800`;
+            default:
+                return `${baseClasses} bg-gray-100 text-gray-800`;
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+    };
+
+    const filteredSessions = sessions.filter(session => {
+        const matchesSearch = session.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            session.user?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
+
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/api/auth/logout', {
+                method: 'POST'
+            });
+            const res = await response.json();
+            if(res?.success) {
+                router.push('/customer/signin')
+            } else {
+                setUser(null);
+            }
+        } catch (error) {
+            console.log('error : ', error)
+        }
+    }
+
+    return (
+        <>
+            <Head>
+                <title>Dashboard</title>
+                <meta name="description" content="Your sessions dashboard" />
+            </Head>
+
+            <div className="min-h-screen bg-gray-50">
+                {/* Header */}
+                <div className="bg-white shadow-sm border-b border-gray-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="py-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900">
+                                        Dashboard
+                                    </h1>
+                                    <p className="mt-1 text-sm text-gray-600">
+                                        Welcome back, {user?.name || ''}!
+                                    </p>
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                    <button
+                                        onClick={() => router.push(`/customer/phase`)}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        Start Now
+                                    </button>
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                            <span className="text-white font-medium text-sm">
+                                                {user?.email.charAt(0).toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <span className="text-sm text-gray-700">{user?.email || ''}</span>
+                                    </div>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="text-gray-500 hover:text-gray-700 text-sm"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Main Content */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+                    {/* Stats Cards */}
+                    <div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center">
+                                <div className="flex-shrink-0">
+                                    <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt className="text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
+                                        <dd className="text-lg font-medium text-gray-900">{sessions.length}</dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center">
+                                <div className="flex-shrink-0">
+                                    <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt className="text-sm font-medium text-gray-500 truncate">Approved</dt>
+                                        <dd className="text-lg font-medium text-gray-900">
+                                            {sessions.filter(s => s.status === SessionStatus.APPROVED).length}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center">
+                                <div className="flex-shrink-0">
+                                    <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                        <svg className="h-5 w-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div className="ml-5 w-0 flex-1">
+                                    <dl>
+                                        <dt className="text-sm font-medium text-gray-500 truncate">Draft</dt>
+                                        <dd className="text-lg font-medium text-gray-900">
+                                            {sessions.filter(s => s.status === SessionStatus.DRAFT).length}
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Filters and Search */}
+                    <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search sessions..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="block w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                                <option value="all">All Status</option>
+                                <option value="DRAFT">{SessionStatus.DRAFT}</option>
+                                <option value="PENDING">{SessionStatus.PENDING}</option>
+                                <option value="REJECTED">{SessionStatus.REJECTED}</option>
+                                <option value="APPROVED">{SessionStatus.APPROVED}</option>
+                            </select>
+                        </div>
+                        <div className="text-sm text-gray-600">
+                            {filteredSessions.length} of {sessions.length} sessions
+                        </div>
+                    </div>
+
+                    {/* Sessions Table */}
+                    <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+                        {filteredSessions.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="text-gray-400 text-6xl mb-4">📚</div>
+                                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                    {sessions.length === 0 ? 'No sessions yet' : 'No sessions found'}
+                                </h3>
+                                <p className="text-gray-600">
+                                    {sessions.length === 0
+                                        ? 'Your sessions will appear here once they\'re created.'
+                                        : 'Try adjusting your search or filter criteria.'
+                                    }
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Session
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Status
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Created
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredSessions.map((session) => (
+                                            <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center">
+                                                        <div className="flex-shrink-0 h-10 w-10">
+                                                            <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                                                <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                </svg>
+                                                            </div>
+                                                        </div>
+                                                        <div className="ml-4">
+                                                            <div className="text-sm font-medium text-gray-900">
+                                                                {session.user.name}
+                                                            </div>
+                                                            <div className="text-sm text-gray-500 max-w-xs truncate">
+                                                                {session.user.email}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={getStatusBadge(session.status)}>
+                                                        {session.status.replace('_', ' ')}
+                                                    </span>
+                                                </td>
+                                               
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                    {formatDate(session.createdAt)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+            </div>
+        </>
+    );
+};
+
+// export const getServerSideProps: GetServerSideProps = async (context) => {
+//   const session = await getSession(context);
+
+//   if (!session) {
+//     return {
+//       redirect: {
+//         destination: '/login',
+//         permanent: false,
+//       },
+//     };
+//   }
+
+//   try {
+//     // eslint-disable-next-line @typescript-eslint/no-require-imports
+//     const { Pool } = require('pg');
+//     const pool = new Pool({
+//       connectionString: process.env.DATABASE_URL,
+//     });
+
+//     const result = await pool.query(
+//       `SELECT 
+//         *
+//       FROM sessions s
+//       WHERE s.user_id = $1
+//       ORDER BY s.created_at DESC`,
+//       [session.user?.email as string]
+//     );
+
+//     const sessions = result.rows.map((row: any) => ({
+//       ...row,
+//       created_at: row.created_at.toISOString(),
+//       updated_at: row.updated_at.toISOString(),
+//     }));
+
+//     return {
+//       props: {
+//         sessions,
+//         user: {
+//           id: session.user.id,
+//           name: session.user.name,
+//           email: session.user.email,
+//         },
+//       },
+//     };
+//   } catch (error) {
+//     console.error('Database error:', error);
+//     return {
+//       props: {
+//         sessions: [],
+//         user: {
+//           id: session.user.id,
+//           name: session.user.name,
+//           email: session.user.email,
+//         },
+//       },
+//     };
+//   }
+// };
+
+export default Dashboard;

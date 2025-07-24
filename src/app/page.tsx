@@ -39,7 +39,7 @@ export default function HomePage() {
                 Complete your document signing process with our step-by-step workflow.
               </p>
               <Link
-                href="/"
+                href="/customer/signin"
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Get Started
@@ -85,7 +85,7 @@ export default function HomePage() {
                 Manage sessions, review documents, and approve submissions.
               </p>
               <Link
-                href="/"
+                href="/admin/signin"
                 className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
                 Admin Access
