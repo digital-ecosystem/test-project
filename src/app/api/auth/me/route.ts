@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
+    const sessionId = cookieStore.get('session-id')?.value;
     
     if (!token) {
       return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
@@ -23,7 +24,11 @@ export async function GET() {
         id: user.id,
         email: user.email,
         name: user.name,
-        isActive: user.isActive
+        isActive: user.isActive,
+        age: user.age,
+        createdAt: user.createdAt,
+        sessionId: sessionId,
+        sessionStatus: user.sessionStatus // Assuming sessionStatus is part of the user object
       }
     });
 

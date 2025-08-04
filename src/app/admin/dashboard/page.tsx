@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Search, CheckCircle, Clock, FileText, ChevronRight, X, Loader2 } from 'lucide-react';
+import { Search, CheckCircle, Clock, FileText, ChevronRight, X, Loader2, LogOut, Hourglass, Ban } from 'lucide-react';
 import { DashboardQuestions, Session, SessionStatus } from '@/types';
 import { useRouter } from 'next/navigation';
 
 const Dashboard = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('All Status');
+    const [statusFilter, setStatusFilter] = useState('all');
     const [sessions, setSessions] = useState<Session[]>([]);
     const [selectedSession, setSelectedSession] = useState<Session | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -30,9 +30,8 @@ const Dashboard = () => {
             if (data?.success) {
                 setSessions(data.sessions);
             } else {
-                setSessions([]);
+                router.push('/admin/signin')
             }
-            console.log("data : ", data);
         }
         fetchSession();
     }, [])
@@ -45,11 +44,10 @@ const Dashboard = () => {
                     credentials: 'include',
                 });
                 const data = await response.json();
-                console.log("🚀 ~ fetchQuestionAnswer ~ data:", data)
                 if (data?.success) {
                     setQuestionAnswer(data.data);
                 } else {
-                    setQuestionAnswer([]);
+                    router.push('/admin/signin')
                 }
             }
             fetchQuestionAnswer();
@@ -62,12 +60,8 @@ const Dashboard = () => {
             const response = await fetch('/api/auth/logout', {
                 method: 'POST'
             });
-            const res = await response.json();
-            if (res?.success) {
-                router.push('/admin/signin')
-            } else {
-                router.push('/admin/signin')
-            }
+            await response.json();
+            router.push('/admin/signin')
         } catch (error) {
             console.log('error : ', error)
         }
@@ -76,13 +70,16 @@ const Dashboard = () => {
     const filteredSessions = sessions.filter(session => {
         const matchesSearch = session?.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             session.user.email.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All Status' || session.status === statusFilter;
+        const matchesStatus = statusFilter === 'all' || session.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
 
     const totalSessions = sessions.length;
     const approvedSessions = sessions.filter(s => s.status === 'APPROVED').length;
     const draftSessions = sessions.filter(s => s.status === 'DRAFT').length;
+    const pendingSessions = sessions.filter(s => s.status === 'PENDING').length;
+    const rejectedSessions = sessions.filter(s => s.status === 'REJECTED').length;
+
 
     // Helper function to get status color
     const getStatusColor = (status: string) => {
@@ -122,7 +119,6 @@ const Dashboard = () => {
         });
 
         const data = await res.json();
-        console.log(data);
         if (data.success) {
             setSessions(sessions.map(session =>
                 session.id === sessionId ? { ...session, status: status } : session
@@ -136,6 +132,14 @@ const Dashboard = () => {
         }, 1000);
 
     }
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -153,14 +157,15 @@ const Dashboard = () => {
                             </button> */}
                             <div className="flex items-center space-x-2">
                                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-sm font-medium">H</span>
+                                    <span className="text-white text-sm font-medium">{process.env.NEXT_PUBLIC_ADMIN_EMAIL ? process.env.NEXT_PUBLIC_ADMIN_EMAIL[0] : 'A'}</span>
                                 </div>
-                                <span className="text-sm text-gray-700">hardik.palminfotech@gmail.com</span>
+                                <span className="text-sm text-gray-700">{process.env.NEXT_PUBLIC_ADMIN_EMAIL || 'admin@example.com'}</span>
                             </div>
                             <button
                                 onClick={handleLogout}
-                                className="text-gray-500 hover:text-gray-700 text-sm"
+                                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors text-sm font-medium shadow-sm"
                             >
+                                <LogOut className="w-4 h-4" />
                                 Logout
                             </button>
                         </div>
@@ -170,7 +175,8 @@ const Dashboard = () => {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
                     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div className="flex items-center">
                             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
@@ -195,6 +201,32 @@ const Dashboard = () => {
                         </div>
                     </div>
 
+
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                <Ban className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Rejected</p>
+                                <p className="text-2xl font-bold text-gray-900">{rejectedSessions}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                <Hourglass className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Pending</p>
+                                <p className="text-2xl font-bold text-gray-900">{pendingSessions}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
                         <div className="flex items-center">
                             <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
@@ -206,6 +238,7 @@ const Dashboard = () => {
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 {/* Sessions Table */}
@@ -229,9 +262,11 @@ const Dashboard = () => {
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                     className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                                 >
-                                    <option>All Status</option>
-                                    <option>DRAFT</option>
-                                    <option>APPROVED</option>
+                                    <option value="all">All Status</option>
+                                    <option value="DRAFT">{SessionStatus.DRAFT}</option>
+                                    <option value="PENDING">{SessionStatus.PENDING}</option>
+                                    <option value="REJECTED">{SessionStatus.REJECTED}</option>
+                                    <option value="APPROVED">{SessionStatus.APPROVED}</option>
                                 </select>
                                 <span className="text-sm text-gray-500 ml-4">
                                     {filteredSessions.length} of {totalSessions} sessions
@@ -276,7 +311,7 @@ const Dashboard = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {session.createdAt}
+                                            {formatDate(session.createdAt)}
                                         </td>
                                     </tr>
                                 ))}
@@ -339,7 +374,7 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600">Duration</label>
-                                            <p className="text-sm text-gray-900">{selectedSession.createdAt}</p>
+                                            <p className="text-sm text-gray-900">{formatDate(selectedSession.expiresAt)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -356,7 +391,7 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600">Created Date</label>
-                                            <p className="text-sm text-gray-900">{selectedSession.createdAt}</p>
+                                            <p className="text-sm text-gray-900">{formatDate(selectedSession.createdAt)}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -415,6 +450,20 @@ const Dashboard = () => {
 
                                             </React.Fragment>
                                         ))}
+                                </div>
+
+                                {/* Download the session PDF */}
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Download Session PDF</h3>
+                                    <button
+                                        // onClick={() => router.push(`/customer/phase/${selectedSession.id}/pdf`)}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    >
+                                        <a href={`/documents/session-${selectedSession.id}.pdf`} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                                            <FileText className="w-4 h-4 mr-2" />
+                                            Download PDF
+                                        </a>
+                                    </button>
                                 </div>
 
                                 {/* Action Buttons */}

@@ -16,6 +16,7 @@ export interface User {
     isActive: boolean
     createdAt: string
     updatedAt: string
+    sessionStatus: SessionStatus // Optional, if not always present
 }
 
 export enum SessionStatus {

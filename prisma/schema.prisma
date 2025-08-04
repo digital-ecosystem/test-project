@@ -129,42 +129,59 @@ enum Role {
 // }
 
 // model User {
-//   id        String    @id @default(cuid())
-//   email     String    @unique
-//   name      String?
-//   age       Int?
-//   isActive  Boolean   @default(true)
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
+//   id         String      @id @default(cuid())
+//   email      String      @unique
+//   name       String?
+//   age        Int?
+//   isActive   Boolean     @default(true)
+//   createdAt  DateTime    @default(now())
+//   updatedAt  DateTime    @updatedAt
+//   otps       OTP[]
+//   sessions   Session[]
+//   qaSessions QASession[]
 
-//   otps      OTP[]
-//   sessions  Session[] // ✅ bidirectional relation
+//   @@map("users")
 // }
 
 // model OTP {
-//   id        String   @id @default(cuid())
-//   email     String
-//   code      String
-//   attempts  Int      @default(0)
-//   expiresAt DateTime
-//   used      Boolean  @default(false)
-//   createdAt DateTime @default(now())
-//   user      User     @relation(fields: [email], references: [email], onDelete: Cascade)
+//   id         String   @id @default(cuid())
+//   email      String
+//   code       String
+//   attempts   Int      @default(0)
+//   expiresAt  DateTime
+//   used       Boolean  @default(false)
+//   createdAt  DateTime @default(now())
+//   user       User     @relation(fields: [email], references: [email], onDelete: Cascade)
+
+//   @@map("otps")
 // }
 
 // model Session {
-//   id         String         @id @default(uuid())
-//   userId     String?        // ✅ Optional
-//   user       User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
-//   status     SessionStatus  @default(DRAFT)
-//   token      String?        @unique
-//   expiresAt  DateTime?
-//   createdAt  DateTime       @default(now())
-//   updatedAt  DateTime       @updatedAt
+//   id         String     @id @default(uuid())
+//   userId     String
+//   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   token      String     @unique
+//   expiresAt  DateTime
+//   createdAt  DateTime   @default(now())
+//   updatedAt  DateTime   @updatedAt
 
-//   answers    Answer[]
-//   thread     Thread?
-//   document   Document?
+//   @@map("sessions")
+// }
+
+// model QASession {
+//   id          String         @id @default(uuid())
+//   userId      String
+//   user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   status      SessionStatus  @default(DRAFT)
+//   phase       SessionPhase   @default(DISCOVERY)
+//   createdAt   DateTime       @default(now())
+//   updatedAt   DateTime       @updatedAt
+//   answers     Answer[]
+//   thread      Thread?
+//   document    Document?
+//   personalInfo PersonalInfo?
+
+//   @@map("qa_sessions")
 // }
 
 // model Question {
@@ -173,6 +190,8 @@ enum Role {
 //   createdAt  DateTime         @default(now())
 //   options    QuestionOption[]
 //   answers    Answer[]
+
+//   @@map("questions")
 // }
 
 // model QuestionOption {
@@ -182,24 +201,30 @@ enum Role {
 //   label      String
 //   value      String
 //   createdAt  DateTime  @default(now())
+
+//   @@map("question_options")
 // }
 
 // model Answer {
-//   id         String    @id @default(uuid())
-//   sessionId  String
-//   questionId String
-//   value      String
-//   createdAt  DateTime  @default(now())
-//   session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-//   question   Question  @relation(fields: [questionId], references: [id])
+//   id          String     @id @default(uuid())
+//   qaSessionId String
+//   questionId  String
+//   value       String
+//   createdAt   DateTime   @default(now())
+//   qaSession   QASession  @relation(fields: [qaSessionId], references: [id], onDelete: Cascade)
+//   question    Question   @relation(fields: [questionId], references: [id])
+
+//   @@map("answers")
 // }
 
 // model Thread {
-//   id         String     @id @default(uuid())
-//   sessionId  String     @unique
-//   session    Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-//   createdAt  DateTime   @default(now())
-//   messages   Message[]
+//   id          String     @id @default(uuid())
+//   qaSessionId String     @unique
+//   qaSession   QASession  @relation(fields: [qaSessionId], references: [id], onDelete: Cascade)
+//   createdAt   DateTime   @default(now())
+//   messages    Message[]
+
+//   @@map("threads")
 // }
 
 // model Message {
@@ -211,14 +236,32 @@ enum Role {
 //   index      Int
 //   createdAt  DateTime  @default(now())
 //   updatedAt  DateTime  @updatedAt
+
+//   @@map("messages")
 // }
 
 // model Document {
-//   id         String    @id @default(uuid())
-//   sessionId  String    @unique
-//   session    Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-//   url        String
-//   signedAt   DateTime  @default(now())
+//   id          String     @id @default(uuid())
+//   qaSessionId String     @unique
+//   qaSession   QASession  @relation(fields: [qaSessionId], references: [id], onDelete: Cascade)
+//   url         String
+//   isSigned    Boolean    @default(false)
+//   signedAt    DateTime   @default(now())
+
+//   @@map("document")
+// }
+
+// model PersonalInfo {
+//   id          String     @id @default(uuid())
+//   qaSessionId String     @unique
+//   qaSession   QASession  @relation(fields: [qaSessionId], references: [id], onDelete: Cascade)
+//   firstName   String
+//   lastName    String
+//   age         Int
+//   createdAt   DateTime   @default(now())
+//   updatedAt   DateTime   @updatedAt
+
+//   @@map("personal_info")
 // }
 
 // enum SessionStatus {
@@ -226,6 +269,13 @@ enum Role {
 //   PENDING
 //   APPROVED
 //   REJECTED
+// }
+
+// enum SessionPhase {
+//   DISCOVERY
+//   CHAT
+//   PERSONAL_INFO
+//   SIGNATURE
 // }
 
 // enum Role {

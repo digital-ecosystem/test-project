@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const user = await AuthService.createOrUpdateUser(email);
 
     // Create session
-    const token = await AuthService.createSession(user.id);
+    const {token, sessionId} = await AuthService.createSession(user.id);
 
     // Clean up expired sessions
     // await AuthService.cleanupExpiredSessions();
@@ -39,7 +39,14 @@ export async function POST(request: Request) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
+      maxAge: 60 * 60 * 24 * 365, // 365 days
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production',
+    });
+    response.cookies.set('session-id', sessionId, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 365 days
       sameSite: 'strict',
       secure: process.env.NODE_ENV === 'production',
     });

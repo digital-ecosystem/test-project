@@ -17,8 +17,10 @@ const Phase = () => {
         last_name: '',
         age: 0
     });
+    const [sessionId, setSessionId] = useState<string | null>(null);
     const router = useRouter();
     const [pdfPath, setPdfPath] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
     // Mock data for demonstration - replace with your API call
     useEffect(() => {
@@ -28,7 +30,6 @@ const Phase = () => {
                     method: 'GET',
                 });
                 const data = await response.json();
-                console.log(data);
                 if (data?.success) {
                     setQuestions(data.questions);
                     setAnswers(data.answers || {});
@@ -45,6 +46,33 @@ const Phase = () => {
         };
 
         fetchQuestions();
+    }, []);
+
+    // Fetch user info
+    useEffect(() => {
+        const fetchUserInfo = async () => {
+            try {
+                const response = await fetch('/api/auth/me', {
+                    method: 'GET',
+                });
+                const data = await response.json();
+                if (data?.success) {
+                    setUserInfo((prev) => ({
+                        ...prev,
+                        first_name: data.user?.name?.split(' ')[0] || '',
+                        last_name: data.user?.name?.split(' ')[1] || '',
+                        age: data.user?.age || 0
+                    } as UserUpdate));
+                    setSessionId(data.user?.sessionId || null);
+                } else {
+                    console.error('Error fetching user info:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        };
+
+        fetchUserInfo();
     }, []);
 
     const handleOptionSelect = async (questionId: string, optionValue: string) => {
@@ -93,6 +121,33 @@ const Phase = () => {
     };
 
     const handlePhase2Submit = async () => {
+
+        // Validate user info
+        if (!userInfo.first_name || !userInfo.last_name || !userInfo.age) {
+            setError('Please fill in all fields before proceeding.');
+            return;
+        }
+
+        // Age validation accepts 18-100
+        if (userInfo.age < 18 || userInfo.age > 100) {
+            setError('Please enter a valid age between 18 and 100.');
+            return;
+        }
+
+        // Minimum 2 and Maximum characters for first and last name
+        if (userInfo.first_name.length < 2 || userInfo.last_name.length < 2 
+            || userInfo.first_name.length > 30 || userInfo.last_name.length > 30) {
+            setError('First and last name must be between 2 and 30 characters.');
+            return;
+        }
+
+        // First and last name validation
+        const namePattern = /^[A-Za-z]+([ '-][A-Za-z]+)*$/;
+        if (!namePattern.test(userInfo.first_name) || !namePattern.test(userInfo.last_name)) {
+            setError('First and last name can only contain letters and spaces.');   
+            return;
+        }
+
         // update user info
         try {
             await fetch('/api/user/update', {
@@ -102,17 +157,17 @@ const Phase = () => {
                 },
                 body: JSON.stringify(userInfo)
             });
-            
-            const pdf = await generatePDF(questions, userInfo, 'A loan processor is a professional responsible for thoroughly examining loan applications, assessing credit standings, and finalizing loan contracts. They play an intermediary role between clients and financial institutions, ensuring timely loan approvals and protecting the organization’s credibility. With expertise in banking procedures and regulations, they analyze applicants’ eligibility and develop repayment plans while maintaining strong communication and sales skills. A loan processor acts as a key link in facilitating loan approvals and maintaining customer satisfaction.');
+
+            const pdf = await generatePDF(questions, answers, userInfo, 'A loan processor is a professional responsible for thoroughly examining loan applications, assessing credit standings, and finalizing loan contracts. They play an intermediary role between clients and financial institutions, ensuring timely loan approvals and protecting the organization’s credibility. With expertise in banking procedures and regulations, they analyze applicants’ eligibility and develop repayment plans while maintaining strong communication and sales skills. A loan processor acts as a key link in facilitating loan approvals and maintaining customer satisfaction.');
             // const pdf = await generatePDFFromHTML(questions, userInfo, 'A loan processor is a professional responsible for thoroughly examining loan applications, assessing credit standings, and finalizing loan contracts. They play an intermediary role between clients and financial institutions, ensuring timely loan approvals and protecting the organization’s credibility. With expertise in banking procedures and regulations, they analyze applicants’ eligibility and develop repayment plans while maintaining strong communication and sales skills. A loan processor acts as a key link in facilitating loan approvals and maintaining customer satisfaction.');
-      
+
             // Save the PDF
-            const fileName = `example-${new Date().toISOString().split('T')[0]}.pdf`
+            const fileName = `session-${sessionId}.pdf`;
+
             // pdf.save(fileName);
-            
+
             // You can also convert to blob for upload to server
             const pdfBlob = pdf.output('blob');
-            console.log("🚀 ~ handlePhase2Submit ~ pdfBlob:", pdfBlob)
             // uploadPDFToServer(pdfBlob);
 
             const arrayBuffer = await pdfBlob.arrayBuffer();
@@ -123,14 +178,13 @@ const Phase = () => {
                 body: JSON.stringify({ fileName, pdfBase64: buffer })
             });
             const pdfSaveResponse = await pdfSave.json();
-            console.log("pdf Save : ", pdfSaveResponse)
-            if(pdfSaveResponse?.success) {
-                setPdfPath('http://localhost:3001'+pdfSaveResponse.fileUrl);
+            if (pdfSaveResponse?.success) {
+                setPdfPath(process.env.NEXT_PUBLIC_FRONTEND_URL + pdfSaveResponse.fileUrl);
             } else {
                 alert('Error saving PDF');
                 setPdfPath('')
             }
-            
+
         } catch (error) {
             console.error('Error updating user info:', error);
         }
@@ -148,22 +202,56 @@ const Phase = () => {
         );
     }
 
-    if(pdfPath) {
+    if (pdfPath) {
         return (
             // Display full screen
             <div className="flex flex-col items-center justify-center h-screen w-full">
                 <div className="bg-white p-4 rounded-lg shadow-md w-full h-full">
                     {/* Load PDF in pdf viewer or Iframe */}
-                    <div className="flex justify-center w-full h-full">
+                    <div className="flex flex-col justify-center w-full h-full">
+                        {/* Complete and Signature Button and Back to Dashboard Button */}
                         <iframe src={pdfPath} width="100%" height="100%" frameBorder="0" scrolling="no" />
-                         {/* Response summary */}
-                        <button 
-                            className=""
-                        >
-                            <a href={pdfPath} download={'fileName'}>
-                                Save PDF
-                            </a>
-                        </button>
+                        {/* Response summary */}
+                        <div className="flex justify-between w-full mt-4">
+                            <button
+                                onClick={() => router.push('/customer/dashboard')}
+                                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Back to Dashboard
+                            </button>
+                            {/* <button
+                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                                <a href={pdfPath} download={'session-' + sessionId + '.pdf'}>
+                                    Download PDF
+                                </a>
+                            </button> */}
+                            <button
+                                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    // 1. Call your API to update user status
+                                    try {
+                                        await fetch('/api/user/update-status', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ sessionId }),
+                                        });
+                                    } catch (err) {
+                                        console.error('Failed to update user status', err);
+                                    }
+                                    // 2. Trigger the download
+                                    const link = document.createElement('a');
+                                    link.href = pdfPath;
+                                    link.download = 'session-' + sessionId + '.pdf';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                }}
+                            >
+                                Download PDF
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -217,6 +305,14 @@ const Phase = () => {
                                 onChange={(e) => setUserInfo({ ...userInfo, age: parseInt(e.target.value) })}
                             />
                         </div>
+
+                        {error && (
+                            <div className="text-red-600 text-sm text-center bg-red-50 py-2 px-3 rounded-lg">
+                                {error}
+                            </div>
+                        )}
+
+                        {/* Submit and Back to Chat Button */}
 
                         <div className="flex space-x-4 pt-4">
                             <button
@@ -282,14 +378,14 @@ const Phase = () => {
                                     key={option.id}
                                     onClick={() => handleOptionSelect(currentQuestion.id, option.value)}
                                     className={`w-full p-4 text-left border-2 rounded-lg transition-all duration-200 hover:border-blue-500 hover:bg-blue-50 ${answers?.[currentQuestion.id] === option.value
-                                            ? 'border-blue-500 bg-blue-50 text-blue-900'
-                                            : 'border-gray-200 text-gray-700'
+                                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                        : 'border-gray-200 text-gray-700'
                                         }`}
                                 >
                                     <div className="flex items-center">
                                         <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${answers[currentQuestion.id] === option.value
-                                                ? 'border-blue-500 bg-blue-500'
-                                                : 'border-gray-300'
+                                            ? 'border-blue-500 bg-blue-500'
+                                            : 'border-gray-300'
                                             }`}>
                                             {answers[currentQuestion.id] === option.value && (
                                                 <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -309,8 +405,8 @@ const Phase = () => {
                         onClick={handleBack}
                         disabled={currentQuestionIndex === 0}
                         className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${currentQuestionIndex === 0
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                             }`}
                     >
                         <ChevronLeft className="w-5 h-5 mr-2" />
@@ -321,8 +417,8 @@ const Phase = () => {
                         onClick={handleNext}
                         disabled={!answers[currentQuestion?.id]}
                         className={`flex items-center px-6 py-3 rounded-lg font-medium transition-colors ${!answers[currentQuestion?.id]
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
                             }`}
                     >
                         {currentQuestionIndex === questions.length - 1 ? 'Complete' : 'Next'}

@@ -16,7 +16,6 @@ export default async function middleware(req: NextRequest) {
   // Get session cookie
   const cookie = req.cookies.get('session')?.value;
   const session = await decrypt(cookie);
-  console.log("🚀 ~ middleware ~ session:", session)
 
   // Redirect logged-in admin away from admin sign-in page
   if (path === adminSignInRoute && session?.role === 'admin') {

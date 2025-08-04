@@ -111,7 +111,7 @@ export const generatePDFFromHTML = async (questionsData: Question[], personalInf
     }
 };
 
-export const generatePDF = async (questionsData: Question[], personalInfo: UserUpdate, productDescription: string) => {
+export const generatePDF = async (questionsData: Question[],  answers: Record<string, string>, personalInfo: UserUpdate, productDescription: string) => {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -146,7 +146,15 @@ export const generatePDF = async (questionsData: Question[], personalInfo: UserU
         // Answer
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(11);
-        const answerText = `Answer: ${'Not answered'}`;
+        // Get the selected answer value
+        const selectedValue = answers[question.id];
+        // Find the option label
+        const selectedOption = question.options.find(opt => opt.value === selectedValue);
+        const answerValue = selectedOption ? selectedOption.label : 'Not answered';
+
+        // const answerValue = answers[question.id] || 'Not answered';
+        const answerText = `Answer: ${answerValue}`;
+        // const answerText = `Answer: ${'Not answered'}`;
         const answerLines = pdf.splitTextToSize(answerText, pageWidth - 2 * margin);
         pdf.text(answerLines, margin + 5, yPosition);
         yPosition += answerLines.length * 6 + 8;

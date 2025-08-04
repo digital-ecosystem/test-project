@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/navigation';
 import { Session, SessionStatus, User } from '@/types';
+import { Ban, CheckCircle, Clock, FileText, Hourglass, LogOut } from 'lucide-react';
 
 // const sessionData: Session[] = [
 //     {
@@ -132,7 +133,6 @@ const Dashboard = () => {
         const fetchUser = async () => {
             const response = await fetch('/api/auth/me');
             const user = await response.json();
-            console.log("🚀 ~ fetchUser ~ user:", user)
             if(user?.success) {
                 setUser(user.user);
             } else {
@@ -150,14 +150,12 @@ const Dashboard = () => {
                 method: 'GET',
             });
             const data = await response.json();
-            console.log("🚀 ~ fetchSession ~ data:", data)
             // setLoading(null);
             if(data?.success) {
                 setSessions(data.sessions);
             } else {
                 setSessions([]);
             }
-            console.log("data : ", data);
         }
         fetchSession();
     }, [])
@@ -231,7 +229,12 @@ const Dashboard = () => {
                                 <div className="flex items-center space-x-4">
                                     <button
                                         onClick={() => router.push(`/customer/phase`)}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                        className={`px-4 py-2 rounded-lg transition-colors cursor-pointer
+                                            ${user && user.sessionStatus === SessionStatus.DRAFT
+                                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            }`}
+                                        disabled={!(user && user.sessionStatus === SessionStatus.DRAFT)}
                                     >
                                         Start Now
                                     </button>
@@ -245,8 +248,9 @@ const Dashboard = () => {
                                     </div>
                                     <button
                                         onClick={handleLogout}
-                                        className="text-gray-500 hover:text-gray-700 text-sm"
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors text-sm font-medium shadow-sm"
                                     >
+                                        <LogOut className="w-4 h-4" />
                                         Logout
                                     </button>
                                 </div>
@@ -259,65 +263,70 @@ const Dashboard = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                     {/* Stats Cards */}
-                    <div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Total Sessions</dt>
-                                        <dd className="text-lg font-medium text-gray-900">{sessions.length}</dd>
-                                    </dl>
-                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                <FileText className="w-5 h-5 text-blue-600" />
                             </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <svg className="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Approved</dt>
-                                        <dd className="text-lg font-medium text-gray-900">
-                                            {sessions.filter(s => s.status === SessionStatus.APPROVED).length}
-                                        </dd>
-                                    </dl>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    <div className="h-8 w-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                        <svg className="h-5 w-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div className="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt className="text-sm font-medium text-gray-500 truncate">Draft</dt>
-                                        <dd className="text-lg font-medium text-gray-900">
-                                            {sessions.filter(s => s.status === SessionStatus.DRAFT).length}
-                                        </dd>
-                                    </dl>
-                                </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Total Sessions</p>
+                                <p className="text-2xl font-bold text-gray-900">{sessions.length}</p>
                             </div>
                         </div>
                     </div>
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <CheckCircle className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Approved</p>
+                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.APPROVED).length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                <Ban className="w-5 h-5 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Rejected</p>
+                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.REJECTED).length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                <Hourglass className="w-5 h-5 text-orange-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Pending</p>
+                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.PENDING).length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                        <div className="flex items-center">
+                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                <Clock className="w-5 h-5 text-yellow-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Draft</p>
+                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.DRAFT).length}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
 
                     {/* Filters and Search */}
                     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">

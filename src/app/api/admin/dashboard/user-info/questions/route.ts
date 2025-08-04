@@ -11,10 +11,9 @@ export async function GET(req: Request) {
     const sessionId = searchParams.get('sessionId');
     const cookie = (await cookies()).get('session')?.value;
     const session = await decrypt(cookie);
-    console.log("🚀 ~ GET ~ session:", session)
 
     if (!session?.userId || session?.role !== 'admin') {
-        return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
+        return NextResponse.json({ message: 'Not authenticated', success: false }, { status: 401 });
     }
 
     if (!sessionId) {

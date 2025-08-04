@@ -10,7 +10,7 @@ export async function GET() {
     console.log("🚀 ~ GET ~ session:", session)
 
     if (!session?.userId || session?.role !== 'admin') {
-      return NextResponse.json({ message: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json({ message: 'Not authenticated', success: false }, { status: 401 });
     }
 
     const sessions = await prisma.session.findMany({

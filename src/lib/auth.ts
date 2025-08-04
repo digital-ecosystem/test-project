@@ -61,7 +61,6 @@ export class AuthService {
       },
       orderBy: { createdAt: 'desc' }
     });
-    console.log("🚀 ~ AuthService ~ verifyOTP ~ otp:", otp)
 
     if (!otp) {
       // Check if there's an OTP for this email to increment attempts
@@ -106,12 +105,12 @@ export class AuthService {
     const token = jwt.sign(
       { userId },
       process.env.JWT_SECRET as string,
-      { expiresIn: '7d' }
+      { expiresIn: '365d' }
     );
 
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
 
-    await prisma.session.create({
+    const session = await prisma.session.create({
       data: {
         userId,
         token,
@@ -119,7 +118,7 @@ export class AuthService {
       }
     });
 
-    return token;
+    return {token, sessionId: session.id};
   }
 
   // static async cleanupExpiredSessions() {
@@ -135,8 +134,7 @@ export class AuthService {
       throw new Error('JWT_SECRET environment variable is not set');
     }
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-      console.log("decoded : ", decoded)
+      jwt.verify(token, process.env.JWT_SECRET as string);
 
       const session = await prisma.session.findUnique({
         where: { token },
@@ -147,7 +145,7 @@ export class AuthService {
         return null;
       }
 
-      return session.user;
+      return {...session.user};
     } catch (error) {
       console.log("🚀 ~ AuthService ~ getUserFromToken ~ error:", error)
       return null;
@@ -158,8 +156,8 @@ export class AuthService {
     return prisma.session.findFirst({
       where: {
         user: { email },
-        status: 'DRAFT'
-      }
+      },
+      orderBy: { createdAt: 'desc' }
     });
   }
 }
