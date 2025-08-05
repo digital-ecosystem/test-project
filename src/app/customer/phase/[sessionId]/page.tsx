@@ -4,9 +4,13 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Question, UserUpdate } from '@/types';
 import { generatePDF } from '@/utils/pdfGenerator';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import { SessionStatus } from '@/generated/prisma';
 
 const Phase = () => {
+    const params = useParams();
+    const sessionId = params?.sessionId as string;
+    console.log("🚀 ~ Phase ~ sessionId:", sessionId)
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -17,16 +21,21 @@ const Phase = () => {
         last_name: '',
         age: 0
     });
-    const [sessionId, setSessionId] = useState<string | null>(null);
+    // const [sessionId, setSessionId] = useState<string | null>(null);
     const router = useRouter();
     const [pdfPath, setPdfPath] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [qaSessionStatus, setQaSessionStatus] = useState<string | null>(SessionStatus.DRAFT);
+
+    useEffect(() => {
+        console.log(" qaSessionStatus : ", qaSessionStatus)
+    }, [qaSessionStatus]);
 
     // Mock data for demonstration - replace with your API call
     useEffect(() => {
         const fetchQuestions = async () => {
             try {
-                const response = await fetch('/api/phase', {
+                const response = await fetch('/api/phase?id=' + sessionId, {
                     method: 'GET',
                 });
                 const data = await response.json();
@@ -52,18 +61,18 @@ const Phase = () => {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch('/api/auth/me', {
+                const response = await fetch('/api/user/info/' + sessionId, {
                     method: 'GET',
                 });
                 const data = await response.json();
                 if (data?.success) {
                     setUserInfo((prev) => ({
                         ...prev,
-                        first_name: data.user?.name?.split(' ')[0] || '',
-                        last_name: data.user?.name?.split(' ')[1] || '',
+                        first_name: data.user?.firstName || '',
+                        last_name: data.user?.lastName || '',
                         age: data.user?.age || 0
                     } as UserUpdate));
-                    setSessionId(data.user?.sessionId || null);
+                    setQaSessionStatus(data.user?.qaSession?.status || SessionStatus.DRAFT);
                 } else {
                     console.error('Error fetching user info:', data.message);
                 }
@@ -81,7 +90,7 @@ const Phase = () => {
 
         // Persist answer immediately (optimistic update)
         try {
-            await fetch('/api/answers', {
+            await fetch('/api/answers?id=' + sessionId, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -135,7 +144,7 @@ const Phase = () => {
         }
 
         // Minimum 2 and Maximum characters for first and last name
-        if (userInfo.first_name.length < 2 || userInfo.last_name.length < 2 
+        if (userInfo.first_name.length < 2 || userInfo.last_name.length < 2
             || userInfo.first_name.length > 30 || userInfo.last_name.length > 30) {
             setError('First and last name must be between 2 and 30 characters.');
             return;
@@ -144,13 +153,13 @@ const Phase = () => {
         // First and last name validation
         const namePattern = /^[A-Za-z]+([ '-][A-Za-z]+)*$/;
         if (!namePattern.test(userInfo.first_name) || !namePattern.test(userInfo.last_name)) {
-            setError('First and last name can only contain letters and spaces.');   
+            setError('First and last name can only contain letters and spaces.');
             return;
         }
 
         // update user info
         try {
-            await fetch('/api/user/update', {
+            await fetch('/api/user/update?id=' + sessionId, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -281,6 +290,7 @@ const Phase = () => {
                                 placeholder="Enter your first name"
                                 value={userInfo.first_name || ''}
                                 onChange={(e) => setUserInfo({ ...userInfo, first_name: e.target.value })}
+                                disabled={qaSessionStatus !== SessionStatus.DRAFT} // Disable if not in draft status
                             />
                         </div>
 
@@ -292,6 +302,7 @@ const Phase = () => {
                                 placeholder="Enter your last name"
                                 value={userInfo.last_name || ''}
                                 onChange={(e) => setUserInfo({ ...userInfo, last_name: e.target.value })}
+                                disabled={qaSessionStatus !== SessionStatus.DRAFT} // Disable if not in draft status
                             />
                         </div>
 
@@ -303,6 +314,7 @@ const Phase = () => {
                                 placeholder="Enter your age"
                                 value={userInfo.age || ''}
                                 onChange={(e) => setUserInfo({ ...userInfo, age: parseInt(e.target.value) })}
+                                disabled={qaSessionStatus !== SessionStatus.DRAFT} // Disable if not in draft status
                             />
                         </div>
 
@@ -378,15 +390,18 @@ const Phase = () => {
                                     key={option.id}
                                     onClick={() => handleOptionSelect(currentQuestion.id, option.value)}
                                     className={`w-full p-4 text-left border-2 rounded-lg transition-all duration-200 hover:border-blue-500 hover:bg-blue-50 ${answers?.[currentQuestion.id] === option.value
-                                        ? 'border-blue-500 bg-blue-50 text-blue-900'
-                                        : 'border-gray-200 text-gray-700'
-                                        }`}
+                                            ? 'border-blue-500 bg-blue-50 text-blue-900'
+                                            : 'border-gray-200 text-gray-700'
+                                        } ${qaSessionStatus !== SessionStatus.DRAFT ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    disabled={qaSessionStatus !== SessionStatus.DRAFT} // ✅ Disable if not in draft
                                 >
                                     <div className="flex items-center">
-                                        <div className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${answers[currentQuestion.id] === option.value
-                                            ? 'border-blue-500 bg-blue-500'
-                                            : 'border-gray-300'
-                                            }`}>
+                                        <div
+                                            className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${answers[currentQuestion.id] === option.value
+                                                    ? 'border-blue-500 bg-blue-500'
+                                                    : 'border-gray-300'
+                                                }`}
+                                        >
                                             {answers[currentQuestion.id] === option.value && (
                                                 <div className="w-2 h-2 bg-white rounded-full"></div>
                                             )}
@@ -394,6 +409,7 @@ const Phase = () => {
                                         <span className="font-medium">{option.label}</span>
                                     </div>
                                 </button>
+
                             ))}
                         </div>
                     </div>

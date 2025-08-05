@@ -14,8 +14,8 @@ export async function POST(request: Request) {
 
     const { sessionId } = await request.json();
 
-    await prisma.session.update({
-      where: { token: token, id: sessionId }, // Replace with actual session ID
+    await prisma.qASession.update({
+      where: { id: sessionId }, // Replace with actual session ID
       data: {
         status: SessionStatus.PENDING, // Replace with actual status update
       },

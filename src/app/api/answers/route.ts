@@ -6,6 +6,14 @@ import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
+    
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
     const { questionId, answer } = await request.json();
     if (!questionId || !answer ) {
       return NextResponse.json({ message: 'Missing questionId, or answer' }, { status: 400 });
@@ -22,8 +30,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    const session = await prisma.session.findFirst({
-        where: { userId: user.id, status: 'DRAFT' },
+    const session = await prisma.qASession.findFirst({
+        where: { userId: user.id, id: id },
         orderBy: { id: "asc" }
       });
       
@@ -31,12 +39,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "No active session found" }, { status: 404 });
       }
       
-      const sessionId = session.id;
+    const sessionId = session.id;
 
     const newAnswer = await prisma.answer.create({
       data: {
         id: uuidv4(),
-        sessionId,
+        qaSessionId: sessionId,
         questionId,
         value: answer,
         // createdAt will be set automatically if using @default(now())

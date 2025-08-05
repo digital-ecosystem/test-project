@@ -13,7 +13,7 @@ export async function GET() {
       return NextResponse.json({ message: 'Not authenticated', success: false }, { status: 401 });
     }
 
-    const sessions = await prisma.session.findMany({
+    const sessions = await prisma.qASession.findMany({
       include: { user: true, answers: true },
       orderBy: { id: "asc" }
     });

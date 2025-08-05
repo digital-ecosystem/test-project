@@ -7,119 +7,6 @@ import { useRouter } from 'next/navigation';
 import { Session, SessionStatus, User } from '@/types';
 import { Ban, CheckCircle, Clock, FileText, Hourglass, LogOut } from 'lucide-react';
 
-// const sessionData: Session[] = [
-//     {
-//         // Session table data
-//         id: "4a1e5037-7f60-48d4-b9e3-49dc47a88825",
-//         userId: "cmd8g9o6r00007fnocfn0s62c",
-//         status: SessionStatus.DRAFT,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-25 06:43:52.415",
-//         createdAt: "2025-07-18 06:43:52.416",
-//         updatedAt: "2025-07-18 06:43:52.416",
-
-//         // User table data (joined)
-//         user: {
-//             id: "cmd8g9o6r00007fnocfn0s62c",
-//             email: "hardik.palminfotech@gmail.com",
-//             name: "Hardik",
-//             isActive: true,
-//             createdAt: "2025-07-18 06:40:34.985",
-//             updatedAt: "2025-07-18 06:43:52.41"
-//         }
-//     },
-//     {
-//         id: "5b2f6148-8g71-59e5-c0f4-5aed58b99936",
-//         userId: "dne9h0p7s11118gnpdgp1t73d",
-//         status: SessionStatus.DRAFT,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-17 14:30:20.123",
-//         createdAt: "2025-07-10 14:30:20.123",
-//         updatedAt: "2025-07-17 14:30:20.123",
-
-//         user: {
-//             id: "dne9h0p7s11118gnpdgp1t73d",
-//             email: "sarah.johnson@example.com",
-//             name: "Sarah",
-//             isActive: true,
-//             createdAt: "2025-07-10 12:15:45.234",
-//             updatedAt: "2025-07-17 14:30:20.123"
-//         }
-//     },
-//     {
-//         id: "6c3g7259-9h82-6af6-d1g5-6bfe69c00a47",
-//         userId: "eof0i1q8t22229hop0ehq2u84e",
-//         status: SessionStatus.PENDING,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-24 09:15:30.456",
-//         createdAt: "2025-07-17 09:15:30.456",
-//         updatedAt: "2025-07-17 09:15:30.456",
-
-//         user: {
-//             id: "eof0i1q8t22229hop0ehq2u84e",
-//             email: "mike.chen@techcorp.com",
-//             name: "Mike",
-//             isActive: true,
-//             createdAt: "2025-07-15 08:22:15.789",
-//             updatedAt: "2025-07-17 09:15:30.456"
-//         }
-//     },
-//     {
-//         id: "7d4h836a-ai93-7bg7-e2h6-7cg0f7ad1b58",
-//         userId: "fpg1j2r9u33330iqp1fir3v95f",
-//         status: SessionStatus.REJECTED,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-20 16:45:12.789",
-//         createdAt: "2025-07-13 16:45:12.789",
-//         updatedAt: "2025-07-16 10:20:05.123",
-
-//         user: {
-//             id: "fpg1j2r9u33330iqp1fir3v95f",
-//             email: "anna.rodriguez@startup.io",
-//             name: "Anna",
-//             isActive: false,
-//             createdAt: "2025-07-12 14:30:45.456",
-//             updatedAt: "2025-07-16 10:20:05.123"
-//         }
-//     },
-//     {
-//         id: "8e5i947b-bj04-8ch8-f3i7-8dh1g8be2c69",
-//         userId: "gqh2k3s0v44441jrq2gjs4wa6g",
-//         status: SessionStatus.APPROVED,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-26 11:30:45.321",
-//         createdAt: "2025-07-19 11:30:45.321",
-//         updatedAt: "2025-07-19 11:30:45.321",
-
-//         user: {
-//             id: "gqh2k3s0v44441jrq2gjs4wa6g",
-//             email: "david.kim@agency.com",
-//             name: "David",
-//             isActive: true,
-//             createdAt: "2025-07-18 09:45:30.654",
-//             updatedAt: "2025-07-19 11:30:45.321"
-//         }
-//     },
-//     {
-//         id: "9f6j058c-ck15-9di9-g4j8-9ei2h9cf3d7a",
-//         userId: "hrj3l4t1w55552ksr3hkt5xb7h",
-//         status: SessionStatus.DRAFT,
-//         token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-//         expiresAt: "2025-07-15 08:20:15.987",
-//         createdAt: "2025-07-08 08:20:15.987",
-//         updatedAt: "2025-07-15 08:20:15.987",
-
-//         user: {
-//             id: "hrj3l4t1w55552ksr3hkt5xb7h",
-//             email: "emma.wilson@consultancy.com",
-//             name: "Emma",
-//             isActive: true,
-//             createdAt: "2025-07-07 15:10:20.321",
-//             updatedAt: "2025-07-15 08:20:15.987"
-//         }
-//     }
-// ];
-
 const Dashboard = () => {
     // const [loading, setLoading] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -127,13 +14,13 @@ const Dashboard = () => {
     const [user, setUser] = useState<User | null>(null);
     const [sessions, setSessions] = useState<Session[]>([]);
     const router = useRouter();
-        
+    const [loading, setLoading] = useState<boolean>(false);
     useEffect(() => {
         // Fetch login user
         const fetchUser = async () => {
             const response = await fetch('/api/auth/me');
             const user = await response.json();
-            if(user?.success) {
+            if (user?.success) {
                 setUser(user.user);
             } else {
                 setUser(null);
@@ -150,8 +37,9 @@ const Dashboard = () => {
                 method: 'GET',
             });
             const data = await response.json();
+            console.log("🚀 ~ fetchSession ~ data:", data)
             // setLoading(null);
-            if(data?.success) {
+            if (data?.success) {
                 setSessions(data.sessions);
             } else {
                 setSessions([]);
@@ -195,7 +83,7 @@ const Dashboard = () => {
                 method: 'POST'
             });
             const res = await response.json();
-            if(res?.success) {
+            if (res?.success) {
                 router.push('/customer/signin')
             } else {
                 setUser(null);
@@ -205,8 +93,46 @@ const Dashboard = () => {
         }
     }
 
+    const handleStartNow = async () => {
+        // start loading
+        if (!user) {
+            console.log('User not found');
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/qa-session/create/', {
+                method: 'POST',
+                body: JSON.stringify({ userId: user?.id }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const res = await response.json();
+            if (res?.success) {
+                console.log("🚀 ~ handleStartNow ~ res:", res.session.id)
+                router.push('/customer/phase/' + res.session.id);
+            } else {
+                console.log('Failed to create session:', res.message);
+            }
+        } catch (error) {
+            console.log('error : ', error)
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <>
+            {
+                loading && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-blue-500"></div>
+                    </div>
+                )
+            }
             <Head>
                 <title>Dashboard</title>
                 <meta name="description" content="Your sessions dashboard" />
@@ -227,17 +153,14 @@ const Dashboard = () => {
                                     </p>
                                 </div>
                                 <div className="flex items-center space-x-4">
-                                    <button
-                                        onClick={() => router.push(`/customer/phase`)}
-                                        className={`px-4 py-2 rounded-lg transition-colors cursor-pointer
-                                            ${user && user.sessionStatus === SessionStatus.DRAFT
-                                                ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                            }`}
-                                        disabled={!(user && user.sessionStatus === SessionStatus.DRAFT)}
+                                    {/* <button
+                                        // onClick={() => router.push(`/customer/phase`)}
+                                        onClick={handleStartNow}
+                                        className={`px-4 py-2 rounded-lg transition-colors cursor-pointer bg-blue-600 text-white hover:bg-blue-700`}
+                                        // disabled={!(user && user.sessionStatus === SessionStatus.DRAFT)}
                                     >
                                         Start Now
-                                    </button>
+                                    </button> */}
                                     <div className="flex items-center space-x-2">
                                         <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                                             <span className="text-white font-medium text-sm">
@@ -264,69 +187,69 @@ const Dashboard = () => {
 
                     {/* Stats Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
-                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                                <FileText className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Total Sessions</p>
-                                <p className="text-2xl font-bold text-gray-900">{sessions.length}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                                <CheckCircle className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Approved</p>
-                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.APPROVED).length}</p>
+                        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <FileText className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Sessions</p>
+                                    <p className="text-2xl font-bold text-gray-900">{sessions.length}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-
-
-                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-                                <Ban className="w-5 h-5 text-red-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Rejected</p>
-                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.REJECTED).length}</p>
+                        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Approved</p>
+                                    <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.APPROVED).length}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
-                                <Hourglass className="w-5 h-5 text-orange-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Pending</p>
-                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.PENDING).length}</p>
+
+
+                        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                    <Ban className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Rejected</p>
+                                    <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.REJECTED).length}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-                        <div className="flex items-center">
-                            <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
-                                <Clock className="w-5 h-5 text-yellow-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-600">Draft</p>
-                                <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.DRAFT).length}</p>
+                        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                                    <Hourglass className="w-5 h-5 text-orange-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Pending</p>
+                                    <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.PENDING).length}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                </div>
+                        <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                            <div className="flex items-center">
+                                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                                    <Clock className="w-5 h-5 text-yellow-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Draft</p>
+                                    <p className="text-2xl font-bold text-gray-900">{sessions.filter(s => s.status === SessionStatus.DRAFT).length}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
 
                     {/* Filters and Search */}
                     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
@@ -395,7 +318,7 @@ const Dashboard = () => {
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                         {filteredSessions.map((session) => (
-                                            <tr key={session.id} className="hover:bg-gray-50 transition-colors">
+                                            <tr key={session.id} className="hover:bg-gray-50 transition-colors" onClick={() => router.push(`/customer/phase/${session.id}`)}>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center">
                                                         <div className="flex-shrink-0 h-10 w-10">
@@ -420,7 +343,7 @@ const Dashboard = () => {
                                                         {session.status.replace('_', ' ')}
                                                     </span>
                                                 </td>
-                                               
+
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     {formatDate(session.createdAt)}
                                                 </td>
@@ -433,6 +356,25 @@ const Dashboard = () => {
                     </div>
 
                 </div>
+                {/* Floating Action Button */}
+                {
+                    // sessions.filter(s => s.status === SessionStatus.DRAFT).length === 0 && (
+                    <div className="fixed bottom-6 right-6 z-50">
+                        <button
+                            onClick={handleStartNow}
+                            className={
+                                'px-4 py-2 rounded-full shadow-lg transition-colors ' +
+                                (sessions.filter(s => s.status === SessionStatus.DRAFT).length === 0
+                                    ? 'cursor-pointer bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-blue-300 text-white cursor-not-allowed')
+                            }
+                            disabled={sessions.filter(s => s.status === SessionStatus.DRAFT).length !== 0}
+                        >
+                            Start Now
+                        </button>
+                    </div>
+                    // )
+                }
             </div>
         </>
     );

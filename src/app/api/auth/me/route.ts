@@ -27,8 +27,7 @@ export async function GET() {
         isActive: user.isActive,
         age: user.age,
         createdAt: user.createdAt,
-        sessionId: sessionId,
-        sessionStatus: user.sessionStatus // Assuming sessionStatus is part of the user object
+        sessionId: sessionId // Assuming sessionStatus is part of the user object
       }
     });
 

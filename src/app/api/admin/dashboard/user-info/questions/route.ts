@@ -31,7 +31,7 @@ export async function GET(req: Request) {
           orderBy: { id: 'asc' },
         },
         answers: {
-          where: { sessionId },
+          where: { qaSessionId: sessionId },
           select: { value: true },
         },
       },

@@ -1,6 +1,7 @@
 import { prisma } from './prisma';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import { CustomError } from './customError';
 
 export class AuthService {
   static generateOTP() {
@@ -10,45 +11,117 @@ export class AuthService {
   static async createOrUpdateUser(email: string, name = null) {
     return await prisma.user.upsert({
       where: { email },
-      update: { 
+      update: {
         updatedAt: new Date(),
-        isActive: true 
+        isActive: true
       },
-      create: { 
-        email, 
+      create: {
+        email,
         name,
-        isActive: true 
+        isActive: true
       },
     });
   }
 
+  // static async createOTP(email: string) {
+  //   // Clean up expired OTPs for this email
+  //   await prisma.oTP.deleteMany({
+  //     where: {
+  //       email,
+  //       OR: [
+  //         { expiresAt: { lt: new Date() } },
+  //         { used: true }
+  //       ]
+  //     }
+  //   });
+
+  //   // Generate new OTP
+  //   const code = this.generateOTP();
+  //   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  //   const otp = await prisma.oTP.create({
+  //     data: {
+  //       email,
+  //       code,
+  //       expiresAt,
+  //       attempts: 0,
+  //       used: false
+  //     }
+  //   });
+
+  //   return otp;
+  // }
+
   static async createOTP(email: string) {
-    // Clean up expired OTPs for this email
-    await prisma.oTP.deleteMany({
-      where: {
-        email,
-        OR: [
-          { expiresAt: { lt: new Date() } },
-          { used: true }
-        ]
-      }
-    });
+    const now = new Date();
 
-    // Generate new OTP
+    const existingOTP = await prisma.oTP.findUnique({ where: { email } });
+
+    // ✅ If user is blocked, but block has expired → reset the fields
+    if (existingOTP?.blockedUntil && existingOTP.blockedUntil <= now) {
+      existingOTP.resendCount = 0;
+      existingOTP.blockedUntil = null;
+    }
+
+    // ❌ If still blocked
+    if (existingOTP?.blockedUntil && existingOTP.blockedUntil > now) {
+      throw new CustomError('Too many OTP requests. Try again after 5 minutes.', 429);
+    }
+
+    const resendCount = existingOTP?.resendCount ?? 0;
+
+    // 🚫 If resend limit reached, block
+    if (resendCount >= 3) {
+      const blockedUntil = new Date(Date.now() + 5 * 60 * 1000);
+
+      return await prisma.oTP.upsert({
+        where: { email },
+        update: {
+          code: 'BLOCKED',
+          expiresAt: blockedUntil,
+          used: true,
+          resendCount,
+          blockedUntil,
+          createdAt: now,
+        },
+        create: {
+          email,
+          code: 'BLOCKED',
+          expiresAt: blockedUntil,
+          used: true,
+          resendCount,
+          blockedUntil,
+          createdAt: now,
+        },
+      });
+    }
+
+    // ✅ Generate new OTP
     const code = this.generateOTP();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    const otp = await prisma.oTP.create({
-      data: {
+    return await prisma.oTP.upsert({
+      where: { email },
+      update: {
+        code,
+        expiresAt,
+        used: false,
+        attempts: 0,
+        resendCount: resendCount + 1,
+        blockedUntil: null,
+        createdAt: now,
+      },
+      create: {
         email,
         code,
         expiresAt,
+        used: false,
         attempts: 0,
-        used: false
-      }
+        resendCount: 1,
+        blockedUntil: null,
+        createdAt: now,
+      },
     });
-
-    return otp;
   }
 
   static async verifyOTP(email: string, code: string) {
@@ -105,10 +178,10 @@ export class AuthService {
     const token = jwt.sign(
       { userId },
       process.env.JWT_SECRET as string,
-      { expiresIn: '365d' }
+      { expiresIn: '7d' }
     );
 
-    const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 365 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
     const session = await prisma.session.create({
       data: {
@@ -118,7 +191,7 @@ export class AuthService {
       }
     });
 
-    return {token, sessionId: session.id};
+    return { token, sessionId: session.id };
   }
 
   // static async cleanupExpiredSessions() {
@@ -145,7 +218,7 @@ export class AuthService {
         return null;
       }
 
-      return {...session.user};
+      return { ...session.user };
     } catch (error) {
       console.log("🚀 ~ AuthService ~ getUserFromToken ~ error:", error)
       return null;

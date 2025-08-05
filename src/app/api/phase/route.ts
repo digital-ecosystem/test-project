@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { AuthService } from "@/lib/auth";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth-token')?.value;
@@ -12,21 +12,28 @@ export async function GET() {
       return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
     const user = await AuthService.getUserFromToken(token);
     if (!user) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
     // Find the DRAFT session
-    const session = await prisma.session.findFirst({
-      where: { userId: user.id, status: 'DRAFT' },
+    const session = await prisma.qASession.findFirst({
+      where: { userId: user.id, id: id },
       orderBy: { id: "asc" }
     });
 
     let answers: Record<string, string> = {};
     if (session) {
       const answerRows = await prisma.answer.findMany({
-        where: { sessionId: session.id }
+        where: { qaSessionId: session.id }
       });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       answers = answerRows.reduce((acc, ans) => {

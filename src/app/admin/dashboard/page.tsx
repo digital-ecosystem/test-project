@@ -396,6 +396,53 @@ const Dashboard = () => {
                                     </div>
                                 </div>
 
+                                {/* Download the session PDF */}
+                                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Download Session PDF</h3>
+                                    <button
+                                        // onClick={() => router.push(`/customer/phase/${selectedSession.id}/pdf`)}
+                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                                    >
+                                        <a href={`/documents/session-${selectedSession.id}.pdf`} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                                            <FileText className="w-4 h-4 mr-2" />
+                                            Download PDF
+                                        </a>
+                                    </button>
+                                </div>
+
+                                {/* Action Buttons */}
+                                {selectedSession.status === SessionStatus.PENDING &&
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Actions</h3>
+                                        <div className="flex space-x-3">
+                                            {selectedSession.status === SessionStatus.PENDING && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleStatusChange(selectedSession.id, SessionStatus.APPROVED);
+                                                            // closeDrawer();
+                                                        }}
+                                                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                                                    >
+                                                        <CheckCircle className="w-4 h-4 mr-2" />
+                                                        Approve Session
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleStatusChange(selectedSession.id, SessionStatus.REJECTED);
+                                                            // closeDrawer();
+                                                        }}
+                                                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center"
+                                                    >
+                                                        <X className="w-4 h-4 mr-2" />
+                                                        Reject Session
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                }
+
                                 {/* Question and Options */}
                                 <div className="bg-white border border-gray-200 rounded-lg p-4">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Question & Response</h3>
@@ -451,53 +498,6 @@ const Dashboard = () => {
                                             </React.Fragment>
                                         ))}
                                 </div>
-
-                                {/* Download the session PDF */}
-                                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Download Session PDF</h3>
-                                    <button
-                                        // onClick={() => router.push(`/customer/phase/${selectedSession.id}/pdf`)}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-                                    >
-                                        <a href={`/documents/session-${selectedSession.id}.pdf`} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                                            <FileText className="w-4 h-4 mr-2" />
-                                            Download PDF
-                                        </a>
-                                    </button>
-                                </div>
-
-                                {/* Action Buttons */}
-                                {selectedSession.status === SessionStatus.PENDING &&
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Actions</h3>
-                                        <div className="flex space-x-3">
-                                            {selectedSession.status === SessionStatus.PENDING && (
-                                                <>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleStatusChange(selectedSession.id, SessionStatus.APPROVED);
-                                                            // closeDrawer();
-                                                        }}
-                                                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center"
-                                                    >
-                                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                                        Approve Session
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            handleStatusChange(selectedSession.id, SessionStatus.REJECTED);
-                                                            // closeDrawer();
-                                                        }}
-                                                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center"
-                                                    >
-                                                        <X className="w-4 h-4 mr-2" />
-                                                        Reject Session
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                }
                             </div>
                         </div>
                     </>

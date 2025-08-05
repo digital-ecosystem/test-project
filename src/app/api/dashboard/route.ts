@@ -17,7 +17,7 @@ export async function GET() {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    const sessions = await prisma.session.findMany({
+    const sessions = await prisma.qASession.findMany({
       where: { userId: user.id },
       include: { user: true },
       orderBy: { id: "asc" }

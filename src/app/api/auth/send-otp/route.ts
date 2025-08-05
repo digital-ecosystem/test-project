@@ -1,7 +1,8 @@
 import { AuthService } from '@/lib/auth';
 import nodemailer from 'nodemailer';
 import { NextResponse } from 'next/server';
-import { SessionStatus } from '@/types';
+import { CustomError } from '@/lib/customError';
+// import { SessionStatus } from '@/types';
 
 const transporter = nodemailer.createTransport({
   service: process.env.EMAIL_SERVICE || 'gmail',
@@ -24,41 +25,41 @@ export async function POST(request: Request) {
     await AuthService.createOrUpdateUser(email, name);
 
     // Step 2: Check for existing DRAFT session
-    const existingDraftSession = await AuthService.findDraftSessionByEmail(email);
-    const isExpired = existingDraftSession ? new Date(existingDraftSession.expiresAt) < new Date() : true;
-    if (existingDraftSession?.status == SessionStatus.DRAFT && !isExpired) {
-      // Get user
-      const user = await AuthService.createOrUpdateUser(email);
+    // const existingDraftSession = await AuthService.findDraftSessionByEmail(email);
+    // const isExpired = existingDraftSession ? new Date(existingDraftSession.expiresAt) < new Date() : true;
+    // if (existingDraftSession?.status == SessionStatus.DRAFT && !isExpired) {
+    //   // Get user
+    //   const user = await AuthService.createOrUpdateUser(email);
 
-      // Clean up expired sessions
-      // await AuthService.cleanupExpiredSessions();
+    //   // Clean up expired sessions
+    //   // await AuthService.cleanupExpiredSessions();
 
-      // Set HTTP-only cookie using NextResponse
-      const response = NextResponse.json({
-        message: 'Authentication successful',
-        success: true,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name
-        }
-      });
-      response.cookies.set('auth-token', existingDraftSession.token, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365, // 365 days
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
-      });
-      response.cookies.set('session-id', existingDraftSession.id, {
-        httpOnly: true,
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365, // 365 days
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
-      });
-      return response;
-    } else {
+    //   // Set HTTP-only cookie using NextResponse
+    //   const response = NextResponse.json({
+    //     message: 'Authentication successful',
+    //     success: true,
+    //     user: {
+    //       id: user.id,
+    //       email: user.email,
+    //       name: user.name
+    //     }
+    //   });
+    //   response.cookies.set('auth-token', existingDraftSession.token, {
+    //     httpOnly: true,
+    //     path: '/',
+    //     maxAge: 60 * 60 * 24 * 7, // 7 days
+    //     sameSite: 'strict',
+    //     secure: process.env.NODE_ENV === 'production',
+    //   });
+    //   response.cookies.set('session-id', existingDraftSession.id, {
+    //     httpOnly: true,
+    //     path: '/',
+    //     maxAge: 60 * 60 * 24 * 7, // 7 days
+    //     sameSite: 'strict',
+    //     secure: process.env.NODE_ENV === 'production',
+    //   });
+    //   return response;
+    // } else {
       // Create OTP
       const otp = await AuthService.createOTP(email);
 
@@ -101,13 +102,20 @@ export async function POST(request: Request) {
         message: 'OTP sent successfully',
         success: true
       });
-    }
+    // }
 
   } catch (error) {
-    console.error('Send OTP error:', error);
-    return NextResponse.json({
-      message: 'Failed to send OTP',
-      success: false
-    }, { status: 500 });
+    
+    let message = 'Failed to send OTP';
+    let status = 500;
+
+    if (error instanceof CustomError) {
+      message = error.message;
+      status = error.statusCode;
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+
+    return NextResponse.json({ message, success: false }, { status });
   }
 }

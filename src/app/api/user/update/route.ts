@@ -17,18 +17,32 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
+    }
+
     const { first_name, last_name, age } = await request.json();
 
-    const updatedUser = await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        name: `${first_name} ${last_name}`,
+    const updatedOrCreatedUser = await prisma.personalInfo.upsert({
+      where: { qaSessionId: id },
+      update: {
+        firstName: first_name,
+        lastName: last_name,
         age: age,
-        // add other fields as needed
+      },
+      create: {
+        qaSessionId: id,
+        firstName: first_name,
+        lastName: last_name,
+        age: age,
       }
     });
 
-    return NextResponse.json({ success: true, user: updatedUser });
+
+    return NextResponse.json({ success: true, user: updatedOrCreatedUser });
   } catch (error) {
     console.error("Update user error:", error);
     return NextResponse.json({ success: false, message: "Failed to update user" }, { status: 500 });
